@@ -22,7 +22,7 @@ function EmpEmpDetails() {
     const fetchData = async () => {
       try {
         const [workResponse, employeeResponse, companyResponse] = await Promise.all([
-          fetch(`${API_BASE_URL}auth/${user_id}/work-reports`),
+          fetch(`${API_BASE_URL}/auth/${user_id}/work-reports`),
           fetch(`${API_BASE_URL}/auth`),
           fetch(`${API_BASE_URL}/companies`),
         ]);
