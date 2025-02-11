@@ -112,7 +112,8 @@ export default function Record() {
               return (
                 <Card key={report.id} sx={{ marginBottom: 2, padding: 2, boxShadow: 3 }}>
                   <CardContent>
-                    <Typography variant="body2" sx={{ fontWeight: "bold" }}>Report ID: {report.id}</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: "bold" }}>Call Code: {report.id}</Typography>
+                                
                     <Typography variant="body2" color="text.secondary">Date: {new Date(report.date).toLocaleDateString()}</Typography>
                     <Typography variant="body2" ><strong>Company Name:</strong> {company ? company.company_name : 'Unknown'}</Typography>
                     <Typography variant="body2"><strong>Machine Name: </strong>{report.machine_name}</Typography>
