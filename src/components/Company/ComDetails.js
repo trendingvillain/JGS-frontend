@@ -134,7 +134,7 @@ export default function ComDetails() {
             filteredReports.map((report) => (
               <Card key={report.id} sx={{ marginBottom: 2, padding: 2, boxShadow: 3 }}>
                 <CardContent>
-            <Typography variant="body2" sx={{ fontWeight: "bold" }}>Report ID: {report.id}</Typography>
+            <Typography variant="body2" sx={{ fontWeight: "bold" }}>Call Code: {report.id}</Typography>
                   <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                     Engineer: {employees[report.user_id] || 'Unknown'}
                   </Typography>
