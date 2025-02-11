@@ -113,6 +113,7 @@ function EmpDetails() {
           return (
             <Card key={report.id} sx={{ marginBottom: 2, padding: 2, boxShadow: 3 }}>
               <CardContent>
+                            <Typography variant="body2" sx={{ fontWeight: "bold" }}>Report ID: {report.id}</Typography>
                 <Typography variant="h6" sx={{ fontWeight: "bold" }}>{companies[report.company_id] || "Unknown"}</Typography>
                 <Typography variant="body2" color="text.secondary">Date: {format(parseISO(report.date), "dd/MM/yyyy")}</Typography>
                 <Typography variant="body2"><strong>Machine Name:</strong> {report.machine_name}</Typography>
