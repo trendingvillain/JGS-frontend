@@ -8,13 +8,14 @@ export default function Record() {
   const [companies, setCompanies] = useState([]);
   const [employees, setEmployees] = useState({});
   const [loading, setLoading] = useState(true);
-  
+
   // Search Filters
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [searchEngineer, setSearchEngineer] = useState('');
   const [searchStatus, setSearchStatus] = useState('');
   const [filteredWorkReports, setFilteredWorkReports] = useState([]);
+
   const IST_OFFSET = 330;
 
   useEffect(() => {
@@ -22,8 +23,11 @@ export default function Record() {
       try {
         const workResponse = await fetch(`${API_BASE_URL}/work-reports`);
         const workData = await workResponse.json();
-        setWorkReports(workData);
-        setFilteredWorkReports(workData);
+
+        // Sort work reports by id in descending order (newest first)
+        const sortedData = workData.sort((a, b) => b.id - a.id);
+        setWorkReports(sortedData);
+        setFilteredWorkReports(sortedData);
 
         const companyResponse = await fetch(`${API_BASE_URL}/companies`);
         const companyData = await companyResponse.json();
@@ -31,6 +35,7 @@ export default function Record() {
 
         const employeeResponse = await fetch(`${API_BASE_URL}/auth`);
         const employeeData = await employeeResponse.json();
+
         const employeeMap = {};
         employeeData.forEach(employee => {
           employeeMap[employee.id] = employee.name;
@@ -46,7 +51,7 @@ export default function Record() {
     fetchData();
   }, []);
 
-  // Function to filter reports based on user input
+  // Search and Filter Logic
   const handleSearch = () => {
     const filtered = workReports.filter((report) => {
       const reportDate = new Date(report.date);
@@ -56,10 +61,13 @@ export default function Record() {
       const statusMatch = searchStatus ? report.status.toLowerCase() === searchStatus.toLowerCase() : true;
       return dateMatch && engineerMatch && statusMatch;
     });
-    setFilteredWorkReports(filtered);
+
+    // Sort filtered reports by id in descending order (newest first)
+    const sortedFiltered = filtered.sort((a, b) => b.id - a.id);
+    setFilteredWorkReports(sortedFiltered);
   };
 
-  // Count logic
+  // Count logic for summary
   const today = new Date().toISOString().split('T')[0];
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
@@ -68,15 +76,16 @@ export default function Record() {
   const monthCount = workReports.filter(report => new Date(report.date).getMonth() === currentMonth && new Date(report.date).getFullYear() === currentYear).length;
   const yearCount = workReports.filter(report => new Date(report.date).getFullYear() === currentYear).length;
 
+  // Convert UTC date to IST
   const convertToIST = (utcDate) => {
-      const date = parseISO(utcDate);
-      return new Date(date.getTime() - IST_OFFSET * 60 * 1000); // Adjusted for IST
-    };
+    const date = parseISO(utcDate);
+    return new Date(date.getTime() - IST_OFFSET * 60 * 1000);
+  };
 
   return (
     <Box sx={{ padding: 3, maxWidth: 1000, margin: 'auto' }}>
       <Typography variant="h4" sx={{ textAlign: 'center', marginBottom: 2 }}>Work Reports</Typography>
-      
+
       {/* Summary Counts */}
       <Box sx={{ display: 'flex', justifyContent: 'space-around', marginBottom: 3 }}>
         <Typography variant="body1"><strong>Today's Reports:</strong> {todayCount}</Typography>
@@ -86,10 +95,35 @@ export default function Record() {
 
       {/* Search Filters */}
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, marginBottom: 3 }}>
-        <TextField label="From Date" type="date" InputLabelProps={{ shrink: true }} value={fromDate} onChange={(e) => setFromDate(e.target.value)} sx={{ width: '30%' }} />
-        <TextField label="To Date" type="date" InputLabelProps={{ shrink: true }} value={toDate} onChange={(e) => setToDate(e.target.value)} sx={{ width: '30%' }} />
-        <TextField label="Engineer Name" value={searchEngineer} onChange={(e) => setSearchEngineer(e.target.value)} sx={{ width: '30%' }} />
-        <TextField label="Status" select value={searchStatus} onChange={(e) => setSearchStatus(e.target.value)} sx={{ width: '30%' }}>
+        <TextField
+          label="From Date"
+          type="date"
+          InputLabelProps={{ shrink: true }}
+          value={fromDate}
+          onChange={(e) => setFromDate(e.target.value)}
+          sx={{ width: '30%' }}
+        />
+        <TextField
+          label="To Date"
+          type="date"
+          InputLabelProps={{ shrink: true }}
+          value={toDate}
+          onChange={(e) => setToDate(e.target.value)}
+          sx={{ width: '30%' }}
+        />
+        <TextField
+          label="Engineer Name"
+          value={searchEngineer}
+          onChange={(e) => setSearchEngineer(e.target.value)}
+          sx={{ width: '30%' }}
+        />
+        <TextField
+          label="Status"
+          select
+          value={searchStatus}
+          onChange={(e) => setSearchStatus(e.target.value)}
+          sx={{ width: '30%' }}
+        >
           <MenuItem value="">All</MenuItem>
           <MenuItem value="Pending">Pending</MenuItem>
           <MenuItem value="Completed">Completed</MenuItem>
@@ -97,6 +131,7 @@ export default function Record() {
         <Button variant="contained" onClick={handleSearch} sx={{ height: '56px' }}>Search</Button>
       </Box>
 
+      {/* Report List */}
       {loading ? (
         <Box sx={{ textAlign: 'center', marginTop: 4 }}>
           <CircularProgress />
@@ -104,19 +139,19 @@ export default function Record() {
       ) : (
         <>
           {filteredWorkReports.length > 0 ? (
-              filteredWorkReports.map((report) => {
+            filteredWorkReports.map((report) => {
               const inTime = convertToIST(report.in_time);
-          const outTime = convertToIST(report.out_time);
+              const outTime = convertToIST(report.out_time);
               const company = companies.find((c) => c.id === report.company_id);
               const engineerName = employees[report.user_id];
+
               return (
                 <Card key={report.id} sx={{ marginBottom: 2, padding: 2, boxShadow: 3 }}>
                   <CardContent>
                     <Typography variant="body2" sx={{ fontWeight: "bold" }}>Call Code: {report.id}</Typography>
-                                
                     <Typography variant="body2" color="text.secondary">Date: {new Date(report.date).toLocaleDateString()}</Typography>
-                    <Typography variant="body2" ><strong>Company Name:</strong> {company ? company.company_name : 'Unknown'}</Typography>
-                    <Typography variant="body2"><strong>Machine Name: </strong>{report.machine_name}</Typography>
+                    <Typography variant="body2"><strong>Company Name:</strong> {company ? company.company_name : 'Unknown'}</Typography>
+                    <Typography variant="body2"><strong>Machine Name:</strong> {report.machine_name}</Typography>
                     <Typography variant="body2"><strong>Nature of Complaint:</strong> {report.nature_of_complaint}</Typography>
                     <Typography variant="body2"><strong>Time:</strong> {format(inTime, "hh:mm a")} - {format(outTime, "hh:mm a")}</Typography>
                     <Typography variant="body2"><strong>Solution:</strong> {report.solution}</Typography>
