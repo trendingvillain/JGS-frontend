@@ -34,7 +34,7 @@ export default function Register() {
       });
 
       if (response.ok) {
-        const data = await response.json();
+       
         alert("Registration successful!");
         navigate("/employee");
       } else {
